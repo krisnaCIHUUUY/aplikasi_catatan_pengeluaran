@@ -1,10 +1,7 @@
 import 'package:expense_tracker_app/models/expense_category.dart';
-import 'package:expense_tracker_app/routes/app_router.dart';
 import 'package:expense_tracker_app/utils/colors.dart';
 import 'package:expense_tracker_app/utils/expense_icon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 
 class AddExpensePage extends StatefulWidget {
   const AddExpensePage({super.key});
@@ -21,8 +18,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
   final TextEditingController dateController = TextEditingController();
 
   ExpenseCategory? _selectedCategory;
-  DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedTime = TimeOfDay.now();
 
   @override
   void dispose() {
@@ -33,7 +28,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
     super.dispose();
   }
 
-  // FIXED: Category Picker dengan proper scrolling
   void _showCategoryPicker() {
     showModalBottomSheet(
       context: context,
@@ -144,26 +138,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
     );
   }
 
-  // Date Picker
-  Future<void> _selectDate() async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2030),
-    );
-
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        dateController.text = picked.toString().split(
-          ' ',
-        )[0]; // Format: YYYY-MM-DD
-        selectedDate = picked;
-      });
-    }
-  }
-
-
   IconData _getCategoryIcon(ExpenseCategory category) {
     switch (category) {
       case ExpenseCategory.makanan:
@@ -181,30 +155,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
     }
   }
 
-  // Validation
-  String? _validateAmount(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Jumlah tidak boleh kosong';
-    }
-    if (double.tryParse(value) == null) {
-      return 'Masukkan angka yang valid';
-    }
-    if (double.parse(value) <= 0) {
-      return 'Jumlah harus lebih dari 0';
-    }
-    return null;
-  }
-
-  String? _validateTitle(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Judul tidak boleh kosong';
-    }
-    if (value.length < 3) {
-      return 'Judul minimal 3 karakter';
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -212,226 +162,33 @@ class _AddExpensePageState extends State<AddExpensePage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
-        leading: TextButton(
-          onPressed: () => context.go(AppRoutes.home),
-          child: Text(
-            "Batal",
-            style: textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-        leadingWidth: 80,
-        title: Text(
-          "Tambah Pengeluaran",
-          style: textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_horiz, color: AppColors.textSecondary),
+            icon: const Icon(
+              Icons.close_rounded,
+              color: AppColors.textSecondary,
+            ),
             onPressed: () {},
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Amount Input Section
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                color: AppColors.surface,
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Rp',
-                          style: textTheme.displayLarge?.copyWith(
-                            color: AppColors.textSecondary.withValues(
-                              alpha: 0.4,
-                            ),
-                            fontSize: 48,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IntrinsicWidth(
-                          child: TextFormField(
-                            controller: amountController,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            validator: _validateAmount,
-                            style: textTheme.displayLarge?.copyWith(
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: '0',
-                              hintStyle: textTheme.displayLarge?.copyWith(
-                                fontSize: 48,
-                                color: AppColors.textSecondary.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                              border: InputBorder.none,
-                              errorStyle: const TextStyle(fontSize: 12),
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Saldo Dompet: Rp 2.500.000',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 12),
-
-              // Form Fields Section
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title Field
-                    _buildLabel('Judul'),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: titleController,
-                      validator: _validateTitle,
-                      decoration: InputDecoration(
-                        hintText: 'Cth: Nasi Goreng Spesial',
-                        prefixIcon: const Icon(Icons.edit_outlined, size: 20),
-                        filled: true,
-                        fillColor: AppColors.background,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.primary,
-                            width: 2,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.error),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Category Field
-                    _buildLabel('Kategori'),
-                    const SizedBox(height: 8),
-                    _buildCategorySelector(),
-
-                    const SizedBox(height: 24),
-
-                    _buildLabel('Tanggal'),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: dateController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        prefixIcon: Icon(
-                          Icons.calendar_today_outlined,
-                          size: 20,
-                        ),
-                      ),
-                      readOnly: true,
-                      onTap: () {
-                        _selectDate();
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Description Field
-                    _buildLabel('Catatan'),
-                    const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: descriptionController,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: 'Tulis catatan tambahan (opsional)...',
-                        filled: true,
-                        fillColor: AppColors.background,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.primary,
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.all(16),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 100), // Space for bottom button
-            ],
-          ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          children: [
+            Text("Add Expense"),
+            const SizedBox(height: 20),
+            TextField(controller: amountController),
+            const SizedBox(height: 20),
+            _buildCategorySelector(),
+          ],
         ),
       ),
       // bottomNavigationBar: _buildBottomButton(),
-    );
-  }
-
-  Widget _buildLabel(String label) {
-    return Text(
-      label,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: AppColors.textSecondary,
-        fontWeight: FontWeight.w600,
-      ),
     );
   }
 
@@ -442,8 +199,15 @@ class _AddExpensePageState extends State<AddExpensePage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -471,7 +235,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                _selectedCategory?.displayName ?? 'Pilih Kategori',
+                _selectedCategory?.displayName ?? 'Kategori',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: _selectedCategory != null
@@ -480,7 +244,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 ),
               ),
             ),
-            Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+            // Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
           ],
         ),
       ),
