@@ -19,7 +19,6 @@ class ApiService {
       if (res.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(res.body);
 
-        // Cek apakah data kosong
         if (responseData['data'] == null || responseData['data'].isEmpty) {
           return [];
         }
@@ -27,7 +26,6 @@ class ApiService {
         final List data = responseData['data'];
         return data.map((e) => Expense.fromJson(e)).toList();
       } else if (res.statusCode == 404) {
-        // Jika tidak ada data, return list kosong
         return [];
       } else {
         throw Exception("Gagal mengambil data: ${res.statusCode}");
@@ -37,7 +35,6 @@ class ApiService {
     }
   }
 
-  // GET expense by ID
   Future<Expense> getExpenseById(String id) async {
     try {
       final uri = Uri.parse("$baseUrl/expense/$id");
@@ -56,7 +53,6 @@ class ApiService {
     }
   }
 
-  // GET expenses by category
   Future<List<Expense>> getExpensesByCategory(ExpenseCategory category) async {
     try {
       final uri = Uri.parse(
@@ -83,7 +79,6 @@ class ApiService {
     }
   }
 
-  // GET total expenses
   Future<double> getTotalExpenses() async {
     try {
       final uri = Uri.parse("$baseUrl/expense/total");
@@ -100,7 +95,6 @@ class ApiService {
     }
   }
 
-  // CREATE expense
   Future<Expense> createExpense(Expense expense) async {
     try {
       final uri = Uri.parse("$baseUrl/expense");
@@ -121,7 +115,6 @@ class ApiService {
     }
   }
 
-  // UPDATE expense
   Future<Expense> updateExpense(String id, Expense expense) async {
     try {
       final uri = Uri.parse("$baseUrl/expense/$id");
@@ -144,7 +137,6 @@ class ApiService {
     }
   }
 
-  // DELETE expense
   Future<void> deleteExpense(String id) async {
     try {
       final uri = Uri.parse("$baseUrl/expense/$id");
@@ -166,7 +158,6 @@ class ApiService {
     }
   }
 
-  // BONUS: Get expenses by date range
   Future<List<Expense>> getExpensesByDateRange({
     required DateTime startDate,
     required DateTime endDate,
@@ -185,7 +176,6 @@ class ApiService {
     }
   }
 
-  // BONUS: Get statistics by category
   Future<Map<String, double>> getStatisticsByCategory() async {
     try {
       final expenses = await getAllExpenses();
