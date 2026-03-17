@@ -1,7 +1,9 @@
 import 'package:expense_tracker_app/models/expense_category.dart';
+import 'package:expense_tracker_app/routes/app_router.dart';
 import 'package:expense_tracker_app/utils/colors.dart';
 import 'package:expense_tracker_app/utils/expense_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AddExpensePage extends StatefulWidget {
   const AddExpensePage({super.key});
@@ -11,19 +13,19 @@ class AddExpensePage extends StatefulWidget {
 }
 
 class _AddExpensePageState extends State<AddExpensePage> {
-  final _formKey = GlobalKey<FormState>();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
   ExpenseCategory? _selectedCategory;
+  DateTime? selectedDate;
+  // TimeOfDay selectedTime = TimeOfDay.now();
 
   @override
   void dispose() {
     amountController.dispose();
     titleController.dispose();
-    descriptionController.dispose();
+    // descriptionController.dispose();
     dateController.dispose();
     super.dispose();
   }
@@ -155,12 +157,31 @@ class _AddExpensePageState extends State<AddExpensePage> {
     }
   }
 
+  Future<void> _selectDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2030),
+    );
+
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        dateController.text = picked.toString().split(
+          ' ',
+        )[0]; // Format: YYYY-MM-DD
+        selectedDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-
+    // final inpitTheme = Theme.of(context).inputDecorationTheme;
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -171,22 +192,212 @@ class _AddExpensePageState extends State<AddExpensePage> {
               Icons.close_rounded,
               color: AppColors.textSecondary,
             ),
-            onPressed: () {},
+            onPressed: () => context.go(AppRoutes.home),
           ),
         ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          children: [
-            Text("Add Expense"),
-            const SizedBox(height: 20),
-            TextField(controller: amountController),
-            const SizedBox(height: 20),
-            _buildCategorySelector(),
-          ],
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 18,
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    "Add Expenses",
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // amount
+                  TextField(
+                    controller: amountController,
+                    textAlign: TextAlign.center,
+                    style: textTheme.displayLarge?.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: "\$0",
+                      hintStyle: textTheme.displayLarge?.copyWith(
+                        color: AppColors.textSecondary.withValues(alpha: 0.5),
+                      ),
+
+                      contentPadding: EdgeInsets.symmetric(vertical: 15),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildCategorySelector(),
+
+                  const SizedBox(height: 20),
+                  // title
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: titleController,
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+
+                      decoration: InputDecoration(
+                        hintText: "Judul",
+
+                        prefixIcon: Container(
+                          margin: EdgeInsets.only(right: 6, left: 18),
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.divider,
+                          ),
+                          child: Icon(Icons.edit),
+                        ),
+                        prefixIconColor: AppColors.textSecondary,
+                        fillColor: AppColors.surface,
+                        filled: true,
+                        hintStyle: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 20),
+
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Date
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: dateController,
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      readOnly: true,
+                      onTap: () {
+                        _selectDate();
+                      },
+
+                      decoration: InputDecoration(
+                        hintText: "Tanggal",
+                        prefixIcon: Container(
+                          margin: EdgeInsets.only(right: 6, left: 18),
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: selectedDate != null
+                                ? AppColors.primary.withValues(alpha: 0.3)
+                                : AppColors.divider,
+                          ),
+                          child: Icon(
+                            Icons.date_range,
+                            color: selectedDate != null
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                        prefixIconColor: AppColors.textSecondary,
+                        fillColor: AppColors.surface,
+                        filled: true,
+                        hintStyle: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 20),
+
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: InkWell(
+                onTap: () {},
+                splashColor: AppColors.lainnya,
+                borderRadius: BorderRadius.circular(15),
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary,
+                        AppColors.secondary,
+                        AppColors.tertiary,
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Save",
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.surface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       // bottomNavigationBar: _buildBottomButton(),
     );
@@ -244,7 +455,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 ),
               ),
             ),
-            // Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
           ],
         ),
       ),

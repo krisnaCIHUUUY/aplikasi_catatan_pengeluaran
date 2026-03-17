@@ -36,15 +36,6 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
 
-        // StatefulShellBranch(
-        //   routes: [
-        //     GoRoute(
-        //       path: AppRoutes.setting,
-        //       name: AppRoutes.settingName,
-        //       builder: (context, state) => const SettingPage(),
-        //     ),
-        //   ],
-        // ),
       ],
     ),
 

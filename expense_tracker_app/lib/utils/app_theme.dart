@@ -51,12 +51,6 @@ class AppTheme {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
 
-      // Floating Action Button Theme
-      // floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      //   foregroundColor: Colors.white,
-      //   elevation: 6,
-      //   shape: CircleBorder(),
-      // ),
 
       // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
