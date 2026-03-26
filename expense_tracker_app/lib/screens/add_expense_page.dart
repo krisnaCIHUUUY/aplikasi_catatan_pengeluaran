@@ -13,19 +13,18 @@ class AddExpensePage extends StatefulWidget {
 }
 
 class _AddExpensePageState extends State<AddExpensePage> {
+  final _key = GlobalKey<FormState>();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
   ExpenseCategory? _selectedCategory;
   DateTime? selectedDate;
-  // TimeOfDay selectedTime = TimeOfDay.now();
 
   @override
   void dispose() {
     amountController.dispose();
     titleController.dispose();
-    // descriptionController.dispose();
     dateController.dispose();
     super.dispose();
   }
@@ -205,162 +204,176 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 horizontal: 20.0,
                 vertical: 18,
               ),
-              child: Column(
-                children: [
-                  Text(
-                    "Add Expenses",
-                    style: textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // amount
-                  TextField(
-                    controller: amountController,
-                    textAlign: TextAlign.center,
-                    style: textTheme.displayLarge?.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: "\$0",
-                      hintStyle: textTheme.displayLarge?.copyWith(
-                        color: AppColors.textSecondary.withValues(alpha: 0.5),
-                      ),
-
-                      contentPadding: EdgeInsets.symmetric(vertical: 15),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
+              child: Form(
+                key: _key,
+                child: Column(
+                  children: [
+                    Text(
+                      "Add Expenses",
+                      style: textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.normal,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildCategorySelector(),
-
-                  const SizedBox(height: 20),
-                  // title
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: titleController,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-
-                      decoration: InputDecoration(
-                        hintText: "Judul",
-
-                        prefixIcon: Container(
-                          margin: EdgeInsets.only(right: 6, left: 18),
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.divider,
-                          ),
-                          child: Icon(Icons.edit),
-                        ),
-                        prefixIconColor: AppColors.textSecondary,
-                        fillColor: AppColors.surface,
-                        filled: true,
-                        hintStyle: textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 20),
-
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Date
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: dateController,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      readOnly: true,
-                      onTap: () {
-                        _selectDate();
+                    const SizedBox(height: 20),
+                    // amount
+                    TextFormField(
+                      validator: (value) {
+                        // validator
                       },
-
+                      controller: amountController,
+                      textAlign: TextAlign.center,
+                      style: textTheme.displayLarge?.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
                       decoration: InputDecoration(
-                        hintText: "Tanggal",
-                        prefixIcon: Container(
-                          margin: EdgeInsets.only(right: 6, left: 18),
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: selectedDate != null
-                                ? AppColors.primary.withValues(alpha: 0.3)
-                                : AppColors.divider,
-                          ),
-                          child: Icon(
-                            Icons.date_range,
-                            color: selectedDate != null
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
-                          ),
+                        hintText: "\$0",
+                        hintStyle: textTheme.displayLarge?.copyWith(
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
                         ),
-                        prefixIconColor: AppColors.textSecondary,
-                        fillColor: AppColors.surface,
-                        filled: true,
-                        hintStyle: textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 20),
 
+                        contentPadding: EdgeInsets.symmetric(vertical: 15),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25),
+                          borderSide: BorderSide.none,
+                        ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25),
                           borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(25),
                           borderSide: BorderSide.none,
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    _buildCategorySelector(),
 
-                  const SizedBox(height: 100),
-                ],
+                    const SizedBox(height: 20),
+                    // title
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+
+                      // title
+                      child: TextFormField(
+                        validator: (value) {
+                          // validator
+                        },
+                        controller: titleController,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+
+                        decoration: InputDecoration(
+                          hintText: "Judul",
+
+                          prefixIcon: Container(
+                            margin: EdgeInsets.only(right: 6, left: 18),
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.divider,
+                            ),
+                            child: Icon(Icons.edit),
+                          ),
+                          prefixIconColor: AppColors.textSecondary,
+                          fillColor: AppColors.surface,
+                          filled: true,
+                          hintStyle: textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(vertical: 20),
+
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Date
+                    Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextFormField(
+                        validator: (value) {
+                          // validator
+                        },
+                        controller: dateController,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        readOnly: true,
+                        onTap: () {
+                          _selectDate();
+                        },
+
+                        decoration: InputDecoration(
+                          hintText: "Tanggal",
+                          prefixIcon: Container(
+                            margin: EdgeInsets.only(right: 6, left: 18),
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: selectedDate != null
+                                  ? AppColors.primary.withValues(alpha: 0.3)
+                                  : AppColors.divider,
+                            ),
+                            child: Icon(
+                              Icons.date_range,
+                              color: selectedDate != null
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                          prefixIconColor: AppColors.textSecondary,
+                          fillColor: AppColors.surface,
+                          filled: true,
+                          hintStyle: textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(vertical: 20),
+
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
             ),
           ),
