@@ -44,6 +44,8 @@ dependencies:
   go_router: ^17.1.0
   toggle_switch: ^2.3.0
   fl_chart: ^1.1.1
+  firebase_core: ^4.6.0
+  cloud_firestore: ^6.2.0
 
 dev_dependencies:
   flutter_test:

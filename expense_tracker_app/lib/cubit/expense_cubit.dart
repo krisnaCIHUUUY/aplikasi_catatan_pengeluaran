@@ -1,18 +1,18 @@
 import 'package:expense_tracker_app/cubit/expense_state.dart';
 import 'package:expense_tracker_app/models/expense.dart';
 import 'package:expense_tracker_app/models/expense_category.dart';
-import 'package:expense_tracker_app/services/api_service.dart';
+import 'package:expense_tracker_app/services/firebase_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ExpenseCubit extends Cubit<ExpenseState> {
-  final ApiService apiService;
-  ExpenseCubit(this.apiService) : super(ExpenseInitial());
+  // final FirebaseService firebaseService;
+  ExpenseCubit() : super(ExpenseInitial());
 
   Future<void> loadExpenses() async {
     try {
       emit(Expenseloading());
 
-      final expenses = await apiService.getAllExpenses();
+      final expenses = await FirebaseService.fetchData();
 
       if (expenses.isEmpty) {
         emit(ExpenseEmpty());
@@ -31,7 +31,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   Future<void> loadExpensesById(String id) async {
     try {
       emit(Expenseloading());
-      final expense = await apiService.getExpenseById(id);
+      final expense = await FirebaseService.getExpenseById(id);
       if (expense.id.isEmpty) {
         emit(ExpenseNotFound());
       } else {
@@ -45,7 +45,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   Future<void> addExpense(Expense expense) async {
     try {
       emit(Expenseloading());
-      await apiService.createExpense(expense);
+      await FirebaseService.createData(expense);
       await loadExpenses();
     } catch (e) {
       emit(ExpenseError("gagal menambahkan data: ${e.toString()}"));
@@ -55,7 +55,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   Future<void> updateExpense(String id, Expense expense) async {
     try {
       emit(Expenseloading());
-      await apiService.updateExpense(id, expense);
+      await FirebaseService.updateData(id, expense);
       await loadExpenses();
     } catch (e) {
       emit(ExpenseError("gagal mengupdate data: ${e.toString()}"));
@@ -65,7 +65,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   Future<void> deleteExpense(String id) async {
     try {
       emit(Expenseloading());
-      await apiService.deleteExpense(id);
+      await FirebaseService.deleteData(id);
       await loadExpenses();
     } catch (e) {
       emit(ExpenseError("gagal menghapus data: ${e.toString()}"));
@@ -77,7 +77,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   Future<void> getTotalExpense() async {
     try {
       emit(Expenseloading());
-      final double total = apiService.getTotalExpenses() as double;
+      final double total = await FirebaseService.getTotalExpenses();
       emit(Expenseloaded(totalAmount: total));
     } catch (e) {
       emit(ExpenseError("gagal mendapatkan total: ${e.toString()}"));
@@ -88,15 +88,27 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   Future<void> getExpensesByCategory(ExpenseCategory category) async {
     try {
       emit(Expenseloading());
-      final List<Expense> categories = await apiService.getExpensesByCategory(
-        category,
-      );
+      final List<Expense> categories =
+          await FirebaseService.getExpenseByCategory(category);
 
       if (categories.isNotEmpty) {
         emit(Expenseloaded(expenses: categories));
+      } else {
+        emit(ExpenseEmpty());
       }
     } catch (e) {
       emit(ExpenseError("gagal mendapatkan kategori: ${e.toString()}"));
+    }
+  }
+
+  Future<void> deleteAllExpenses() async {
+    try {
+      emit(Expenseloading());
+      await FirebaseService.deleteAllExpenses();
+      await loadExpenses();
+      
+    } catch (e) {
+      emit(ExpenseError(e.toString()));
     }
   }
 }
