@@ -18,9 +18,8 @@ class AppColors {
 
   static const Color secondaryDark = Color(0xFF2980B9);
 
-
   // ==================== TERTIARY COLORS ====================
-// 
+  //
 
   static const Color tertiary = Color(0xFFFF8D6C);
 
@@ -65,7 +64,7 @@ class AppColors {
   // ==================== CATEGORY COLOR MAP ====================
 
   static const Map<String, Color> categoryColors = {
-    'Makanan': makanan,
+    'Makanan & Minuman': makanan,
     'Transport': transport,
     'Belanja': belanja,
     'Hiburan': hiburan,

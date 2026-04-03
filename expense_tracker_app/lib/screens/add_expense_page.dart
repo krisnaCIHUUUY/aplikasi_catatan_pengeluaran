@@ -218,7 +218,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     // amount
                     TextFormField(
                       validator: (value) {
-                        // validator
+                        return null;
                       },
                       controller: amountController,
                       textAlign: TextAlign.center,
@@ -266,6 +266,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                       child: TextFormField(
                         validator: (value) {
                           // validator
+                          return null;
                         },
                         controller: titleController,
                         style: textTheme.bodyLarge?.copyWith(
@@ -320,6 +321,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                       child: TextFormField(
                         validator: (value) {
                           // validator
+                          return null;
                         },
                         controller: dateController,
                         style: textTheme.bodyLarge?.copyWith(

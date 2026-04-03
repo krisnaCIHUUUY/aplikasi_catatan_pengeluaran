@@ -21,12 +21,25 @@ class FirebaseService {
       if (querySnapshot.docs.isEmpty) {
         return [];
       }
+      // print("fetchdata:  ${querySnapshot}");
+      final expenses = querySnapshot.docs.map((doc) {
+        try {
+          final data = doc.data();
+          data['id'] = doc.id;
 
-      return querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return Expense.fromJson(data);
+          print('🔄 Parsing document ${doc.id}...');
+          print('🔄 Data to parse: $data');
+
+          final expense = Expense.fromJson(data);
+          return expense;
+        } catch (e) {
+          print('❌ Error parsing document ${doc.id}: $e');
+          print('❌ Stack trace: ${StackTrace.current}');
+          rethrow;
+        }
       }).toList();
+
+      return expenses;
     } catch (e) {
       throw Exception('gagal mengambil data, error: ${e.toString()}');
     }

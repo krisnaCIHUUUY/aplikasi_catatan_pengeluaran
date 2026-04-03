@@ -5,7 +5,6 @@ import 'package:expense_tracker_app/services/firebase_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ExpenseCubit extends Cubit<ExpenseState> {
-  // final FirebaseService firebaseService;
   ExpenseCubit() : super(ExpenseInitial());
 
   Future<void> loadExpenses() async {
@@ -13,17 +12,20 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       emit(Expenseloading());
 
       final expenses = await FirebaseService.fetchData();
-
+      
       if (expenses.isEmpty) {
+        print('ExpenseCubit: No expenses, emitting ExpenseEmpty');
         emit(ExpenseEmpty());
       } else {
-        final double total = expenses.fold(
-          0,
+        final double total = expenses.fold<double>(
+          0.0,
           (sum, expense) => sum + expense.amount,
         );
         emit(Expenseloaded(expenses: expenses, totalAmount: total));
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('ExpenseCubit: Error loading expenses: $e');
+      print('Stack trace: $stackTrace');
       emit(ExpenseError(e.toString()));
     }
   }
@@ -106,7 +108,6 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       emit(Expenseloading());
       await FirebaseService.deleteAllExpenses();
       await loadExpenses();
-      
     } catch (e) {
       emit(ExpenseError(e.toString()));
     }

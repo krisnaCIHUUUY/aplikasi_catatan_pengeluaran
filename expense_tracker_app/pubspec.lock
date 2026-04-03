@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: async
-      sha256: "758e6d74e971c3e5aceb4110bfd6698efc7f501675bcfe0c775459a8140750eb"
+      sha256: e2eb0491ba5ddb6177742d2da23904574082139b07c1e33b8503b9f46f3e1a37
       url: "https://pub.dev"
     source: hosted
-    version: "2.13.0"
+    version: "2.13.1"
   bloc:
     dependency: transitive
     description:
@@ -85,10 +85,10 @@ packages:
     dependency: "direct main"
     description:
       name: cupertino_icons
-      sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
+      sha256: "41e005c33bd814be4d3096aff55b1908d419fde52ca656c8c47719ec745873cd"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.8"
+    version: "1.0.9"
   equatable:
     dependency: transitive
     description:
@@ -133,10 +133,10 @@ packages:
     dependency: "direct main"
     description:
       name: fl_chart
-      sha256: "7ca9a40f4eb85949190e54087be8b4d6ac09dc4c54238d782a34cf1f7c011de9"
+      sha256: b938f77d042cbcd822936a7a359a7235bad8bd72070de1f827efc2cc297ac888
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.1"
+    version: "1.2.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -154,10 +154,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_form_builder
-      sha256: "5a0aaed73604686929f176b6b373899c4ab0fad461a971c6a66bfd9f6ad8dbce"
+      sha256: "1233251b4bc1d5deb245745d2a89dcebf4cdd382e1ec3f21f1c6703b700e574f"
       url: "https://pub.dev"
     source: hosted
-    version: "10.3.0+1"
+    version: "10.3.0+2"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -185,10 +185,10 @@ packages:
     dependency: "direct main"
     description:
       name: go_router
-      sha256: "7974313e217a7771557add6ff2238acb63f635317c35fa590d348fb238f00896"
+      sha256: "48fb2f42ad057476fa4b733cb95e9f9ea7b0b010bb349ea491dca7dbdb18ffc4"
       url: "https://pub.dev"
     source: hosted
-    version: "17.1.0"
+    version: "17.2.0"
   http:
     dependency: "direct main"
     description:

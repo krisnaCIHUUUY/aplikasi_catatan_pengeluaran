@@ -1,3 +1,4 @@
+// lib/models/expense.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Expense {
@@ -21,33 +22,87 @@ class Expense {
     required this.updatedAt,
   });
 
-  
+  // ✅ FROM FIRESTORE dengan DEBUGGING
   factory Expense.fromJson(Map<String, dynamic> json) {
-    return Expense(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
-      amount: (json['amount'] ?? 0).toDouble(),
-      category: json['category'] ?? '',
-      
-      date: json['date'] is Timestamp
-          ? (json['date'] as Timestamp).toDate()
-          : DateTime.parse(json['date'] as String),
-      description: json['description'],
-      
-      createdAt: json['createdAt'] is Timestamp
-          ? (json['createdAt'] as Timestamp).toDate()
-          : json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
-      updatedAt: json['updatedAt'] is Timestamp
-          ? (json['updatedAt'] as Timestamp).toDate()
-          : json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
-          : DateTime.now(),
-    );
+    try {
+      print('🔄 Parsing JSON: $json');
+
+      final id = json['id'] as String? ?? '';
+      print('ID: $id');
+
+      final title = json['title'] as String? ?? '';
+      print('Title: $title');
+
+      final amount = _parseAmount(json['amount']);
+      print('Amount: $amount');
+
+      final category = json['category'] as String? ?? '';
+      print('Category: $category');
+
+      final date = _parseDate(json['date']);
+      print('Date: $date');
+
+      final description = json['description'] as String?;
+      print('Description: $description');
+
+      final createdAt = _parseDate(json['createdAt']) ?? DateTime.now();
+      print('CreatedAt: $createdAt');
+
+      final updatedAt = _parseDate(json['updatedAt']) ?? DateTime.now();
+      print(' UpdatedAt: $updatedAt');
+
+      return Expense(
+        id: id,
+        title: title,
+        amount: amount,
+        category: category,
+        date: date ?? DateTime.now(),
+        description: description,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+    } catch (e, stackTrace) {
+      print('Error in fromJson: $e');
+      print('JSON data: $json');
+      print('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
-  
+  static double _parseAmount(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+
+    // Firestore Timestamp
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+
+    // String date
+    if (value is String) {
+      try {
+        return DateTime.parse(value);
+      } catch (e) {
+        print('⚠️ Failed to parse date string: $value');
+        return null;
+      }
+    }
+
+    // DateTime object
+    if (value is DateTime) {
+      return value;
+    }
+
+    return null;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -58,26 +113,8 @@ class Expense {
     };
   }
 
-  
-  Expense copyWith({
-    String? id,
-    String? title,
-    double? amount,
-    String? category,
-    DateTime? date,
-    String? description,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Expense(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      amount: amount ?? this.amount,
-      category: category ?? this.category,
-      date: date ?? this.date,
-      description: description ?? this.description,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
+  @override
+  String toString() {
+    return 'Expense(id: $id, title: $title, amount: $amount, category: $category, date: $date)';
   }
 }

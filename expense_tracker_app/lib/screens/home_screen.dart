@@ -1,132 +1,333 @@
+import 'package:expense_tracker_app/cubit/expense_cubit.dart';
+import 'package:expense_tracker_app/cubit/expense_state.dart';
+import 'package:expense_tracker_app/models/expense_category.dart';
 import 'package:expense_tracker_app/utils/colors.dart';
+import 'package:expense_tracker_app/utils/empty_state.dart';
+import 'package:expense_tracker_app/utils/loading_state.dart';
+import 'package:expense_tracker_app/widgets/date_header.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_app/utils/expense_icon.dart';
 import 'package:expense_tracker_app/widgets/expense_card.dart';
 import 'package:expense_tracker_app/widgets/summary_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
-class HomeScreen extends StatelessWidget {
+// bug udah di fiks, tinggal jalankan run saja
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ExpenseCubit>().loadExpenses();
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
     return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // APP BAR
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 22),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  spacing: 15,
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.4),
-                      child: Icon(Icons.person, color: AppColors.primary),
-                    ),
-                    SizedBox(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      child: BlocBuilder<ExpenseCubit, ExpenseState>(
+        builder: (context, state) {
+          List<dynamic> allExpenses = [];
+          List<dynamic> todayExpenses = [];
+          double totalExpenses = 0.0;
+          double todayTotal = 0.0;
+
+          if (state is Expenseloaded && state.expenses != null) {
+            allExpenses = state.expenses!;
+
+            print(' State: Expenseloaded');
+            print(' All expenses count: ${allExpenses.length}');
+            print(' All expenses: $allExpenses');
+
+            // Filter today's expenses
+            final today = DateTime.now();
+            todayExpenses = allExpenses.where((expense) {
+              final isSameDay =
+                  expense.date.year == today.year &&
+                  expense.date.month == today.month &&
+                  expense.date.day == today.day;
+
+              if (isSameDay) {
+                print(' Today expense found: ${expense.title}');
+              }
+
+              return isSameDay;
+            }).toList();
+
+            print(' Today expenses count: ${todayExpenses.length}');
+            print(' Today expenses: $todayExpenses');
+
+            // Calculate totals
+            totalExpenses = allExpenses.fold<double>(
+              0.0,
+              (sum, expense) => sum + (expense.amount ?? 0.0),
+            );
+
+            todayTotal = todayExpenses.fold<double>(
+              0.0,
+              (sum, expense) => sum + (expense.amount ?? 0.0),
+            );
+
+            print('Total expenses: $totalExpenses');
+            print('Today total: $todayTotal');
+          }
+
+          return CustomScrollView(
+            slivers: [
+              // 1. Header (Profile & Settings)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 10, 22, 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
                         children: [
-                          Text("Selamat Pagi,", style: textTheme.bodyMedium),
-                          Text(
-                            "Budi Santoso",
-                            style: textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                          CircleAvatar(
+                            backgroundColor: AppColors.primary.withOpacity(0.4),
+                            child: const Icon(
+                              Icons.person,
+                              color: AppColors.primary,
                             ),
+                          ),
+                          const SizedBox(width: 15),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _getGreeting(),
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              Text(
+                                "Budi Santoso",
+                                style: textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.settings),
+                        color: AppColors.textPrimary,
+                      ),
+                    ],
+                  ),
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.settings),
+              ),
+
+              // 2. Summary Card
+              SliverToBoxAdapter(
+                child: SummaryCard(
+                  saldo: 2500000.0,
+                  pengeluaran: totalExpenses,
+                  pemasukan: 0.0,
                 ),
-              ],
+              ),
+
+              // 3. Transaction Header
+              SliverToBoxAdapter(
+                child: _buildTransactionHeader(textTheme, DateTime.now()),
+              ),
+
+              // 4. Content based on state
+              if (state is Expenseloading)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: LoadingState(),
+                )
+              else if (state is ExpenseError)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildErrorState(context, state.message),
+                )
+              else if (state is ExpenseEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: EmptyState(),
+                )
+              else if (todayExpenses.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildNoTodayExpenses(context),
+                )
+              else if (state is Expenseloaded)
+                _buildExpenseList(todayExpenses),
+
+              // Bottom spacing for FAB
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildExpenseList(List<dynamic> todayExpenses) {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final expense = todayExpenses[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: ExpenseCard(
+              title: expense.title ?? 'Tanpa Judul',
+              time: expense.date != null
+                  ? DateFormat('HH:mm').format(expense.date)
+                  : '--:--',
+              amount: expense.amount ?? 0.0,
+              icon: _getCategoryIcon(
+                ExpenseCategory.fromString(expense.category ?? 'Lainnya'),
+              ),
+              color: AppColors.getCategoryColor(expense.category ?? 'Lainnya'),
             ),
-          ),
+          );
+        }, childCount: todayExpenses.length),
+      ),
+    );
+  }
 
-          SizedBox(height: 20),
-
-          // summary card
-          SummaryCard(saldo: 0, pengeluaran: 0, pemasukan: 0),
-
-          SizedBox(height: 20),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 22),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Transaksi",
-                  style: textTheme.titleLarge?.copyWith(
+  Widget _buildTransactionHeader(TextTheme textTheme, DateTime date) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 25, 22, 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Transaksi",
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // TODO: Navigate to all transactions
+                },
+                child: Text(
+                  "Lihat Semua",
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {},
-                  child: Text(
-                    "Lihat Semua",
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 15),
-
-          // tanggal dan list tarnsaksi
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22),
-            child: Text(
-              "HARI INI, 12 MEI",
-              style: textTheme.labelMedium?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
               ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          DateHeader(textTheme: textTheme, date: date),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoTodayExpenses(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.event_available, size: 120, color: AppColors.divider),
+          const SizedBox(height: 24),
+          Text(
+            'Belum ada transaksi hari ini',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 15),
-          Expanded(
-            child: ListView(
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-              children: [
-                // transaksi item
-                ExpenseCard(
-                  title: "Nasi Goreng Spesial",
-                  time: "12:30 PM",
-                  amount: 12000,
-                  icon: ExpenseIcon.makanan,
-                  color: AppColors.makanan,
-                ),
-                ExpenseCard(
-                  title: "Ojek Online",
-                  time: "12:30 PM",
-                  amount: 25000,
-                  icon: ExpenseIcon.transport,
-                  color: AppColors.transport,
-                ),
-                ExpenseCard(
-                  title: "Minimarket",
-                  time: "12:30 PM",
-                  amount: 20000,
-                  icon: ExpenseIcon.belanja,
-                  color: AppColors.belanja,
-                ),
-              ],
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Transaksi yang Anda buat hari ini\nakan muncul di sini',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildErrorState(BuildContext context, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 80, color: AppColors.error),
+          const SizedBox(height: 16),
+          Text(
+            'Terjadi Kesalahan',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              message,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () {
+              context.read<ExpenseCubit>().loadExpenses();
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Coba Lagi'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Selamat Pagi,';
+    } else if (hour < 15) {
+      return 'Selamat Siang,';
+    } else if (hour < 18) {
+      return 'Selamat Sore,';
+    } else {
+      return 'Selamat Malam,';
+    }
+  }
+
+  IconData _getCategoryIcon(ExpenseCategory category) {
+    switch (category) {
+      case ExpenseCategory.makanan:
+        return ExpenseIcon.makanan;
+      case ExpenseCategory.transportasi:
+        return ExpenseIcon.transport;
+      case ExpenseCategory.belanja:
+        return ExpenseIcon.belanja;
+      case ExpenseCategory.hiburan:
+        return ExpenseIcon.hiburan;
+      case ExpenseCategory.kesehatan:
+        return ExpenseIcon.kesehatan;
+      case ExpenseCategory.lainnya:
+        return ExpenseIcon.lainnya;
+    }
   }
 }

@@ -15,6 +15,11 @@ class SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
+    final percentage = saldo > 0 ? (pengeluaran / saldo) * 100 : 0.0;
+
+    final remaining = saldo - pengeluaran;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22.0),
       child: Container(
