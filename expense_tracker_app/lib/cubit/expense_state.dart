@@ -1,34 +1,22 @@
 import 'package:expense_tracker_app/models/expense.dart';
-import 'package:expense_tracker_app/models/expense_category.dart';
 
 abstract class ExpenseState {}
 
 final class ExpenseInitial extends ExpenseState {}
 
-// loadoing
-class Expenseloading extends ExpenseState {}
+final class ExpenseLoading extends ExpenseState {}
 
-// success
-class Expenseloaded extends ExpenseState {
-  final List<Expense>? expenses;
-  final double? totalAmount;
-  final List<ExpenseCategory>? categories;
+final class ExpenseLoaded extends ExpenseState {
+  final List<Expense> expenses;
+  final double totalAmount;
 
-  Expenseloaded({this.expenses, this.totalAmount, this.categories});
+  ExpenseLoaded({required this.expenses, required this.totalAmount});
 }
 
-// error
-class ExpenseError extends ExpenseState {
+final class ExpenseError extends ExpenseState {
   final String message;
 
   ExpenseError(this.message);
 }
 
-class ExpenseNotFound extends ExpenseState {
-  final String? message;
-
-  ExpenseNotFound({this.message});
-}
-
-// empty
-class ExpenseEmpty extends ExpenseState {}
+final class ExpenseEmpty extends ExpenseState {}

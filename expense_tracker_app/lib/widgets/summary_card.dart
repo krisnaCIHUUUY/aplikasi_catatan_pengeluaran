@@ -1,5 +1,6 @@
 import 'package:expense_tracker_app/utils/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class SummaryCard extends StatelessWidget {
   final double saldo;
@@ -16,9 +17,9 @@ class SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    final percentage = saldo > 0 ? (pengeluaran / saldo) * 100 : 0.0;
+    // final percentage = saldo > 0 ? (pengeluaran / saldo) * 100 : 0.0;
 
-    final remaining = saldo - pengeluaran;
+    final remainingSaldo = saldo - pengeluaran;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22.0),
@@ -55,7 +56,11 @@ class SummaryCard extends StatelessWidget {
 
             SizedBox(height: 20),
             Text(
-              "Rp ${saldo.toStringAsFixed(0)}",
+              NumberFormat.currency(
+                locale: 'id_ID',
+                symbol: 'Rp ',
+                decimalDigits: 0,
+              ).format(remainingSaldo),
               style: textTheme.displayLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -91,7 +96,11 @@ class SummaryCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(left: 10),
                           child: Text(
-                            "Rp ${pengeluaran.toStringAsFixed(0)}",
+                            NumberFormat.currency(
+                              locale: 'id_ID',
+                              symbol: 'Rp ',
+                              decimalDigits: 0,
+                            ).format(pengeluaran),
                             style: textTheme.titleLarge?.copyWith(
                               color: Colors.white,
                             ),
@@ -127,7 +136,11 @@ class SummaryCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(left: 10),
                           child: Text(
-                            "Rp ${pemasukan.toStringAsFixed(0)}",
+                            NumberFormat.currency(
+                              locale: 'id_ID',
+                              symbol: 'Rp ',
+                              decimalDigits: 0,
+                            ).format(pemasukan),
                             style: textTheme.titleLarge?.copyWith(
                               color: Colors.white,
                             ),

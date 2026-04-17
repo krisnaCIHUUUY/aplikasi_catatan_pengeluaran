@@ -1,8 +1,12 @@
+import 'package:expense_tracker_app/cubit/expense_cubit.dart';
+import 'package:expense_tracker_app/cubit/expense_state.dart';
+import 'package:expense_tracker_app/models/expense.dart';
 import 'package:expense_tracker_app/models/expense_category.dart';
 import 'package:expense_tracker_app/routes/app_router.dart';
 import 'package:expense_tracker_app/utils/colors.dart';
 import 'package:expense_tracker_app/utils/expense_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class AddExpensePage extends StatefulWidget {
@@ -19,7 +23,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
   final TextEditingController dateController = TextEditingController();
 
   ExpenseCategory? _selectedCategory;
-  DateTime? selectedDate;
+  DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now();
+
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -174,6 +181,31 @@ class _AddExpensePageState extends State<AddExpensePage> {
     }
   }
 
+  void _handleSubmit() {
+    if (!_key.currentState!.validate()) {
+      return;
+    }
+    final date = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      selectedTime.hour,
+      selectedTime.minute,
+    );
+
+    final expense = Expense(
+      id: '',
+      title: titleController.text.trim(),
+      amount: double.parse(amountController.text.trim()),
+      category: _selectedCategory!.displayName,
+      date: date,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    context.read<ExpenseCubit>().addExpense(expense);
+    context.go(AppRoutes.home);
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -196,225 +228,271 @@ class _AddExpensePageState extends State<AddExpensePage> {
         ],
       ),
 
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20.0,
-                vertical: 18,
+      body: BlocListener<ExpenseCubit, ExpenseState>(
+        listener: (context, state) {
+          if (state is ExpenseLoading) {
+            setState(() => _isLoading = true);
+          } else if (state is ExpenseLoaded) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Pengeluaran berhasil ditambahkan!'),
+                backgroundColor: AppColors.primary,
               ),
-              child: Form(
-                key: _key,
-                child: Column(
-                  children: [
-                    Text(
-                      "Add Expenses",
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // amount
-                    TextFormField(
-                      validator: (value) {
-                        return null;
-                      },
-                      controller: amountController,
-                      textAlign: TextAlign.center,
-                      style: textTheme.displayLarge?.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: "\$0",
-                        hintStyle: textTheme.displayLarge?.copyWith(
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+            );
+            context.pop();
+          } else if (state is ExpenseError) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 18,
+                ),
+                child: Form(
+                  key: _key,
+                  child: Column(
+                    children: [
+                      Text(
+                        "Add Expenses",
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.normal,
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      // amount
+                      _buildAmountField(textTheme),
+                      const SizedBox(height: 20),
+                      _buildCategorySelector(),
 
-                        contentPadding: EdgeInsets.symmetric(vertical: 15),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildCategorySelector(),
-
-                    const SizedBox(height: 20),
-                    // title
-                    Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-
+                      const SizedBox(height: 20),
                       // title
-                      child: TextFormField(
-                        validator: (value) {
-                          // validator
-                          return null;
-                        },
-                        controller: titleController,
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
+                      _buildTitleField(textTheme),
+                      const SizedBox(height: 20),
+                      // Date
+                      _buildDateField(textTheme),
 
-                        decoration: InputDecoration(
-                          hintText: "Judul",
-
-                          prefixIcon: Container(
-                            margin: EdgeInsets.only(right: 6, left: 18),
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.divider,
-                            ),
-                            child: Icon(Icons.edit),
-                          ),
-                          prefixIconColor: AppColors.textSecondary,
-                          fillColor: AppColors.surface,
-                          filled: true,
-                          hintStyle: textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(vertical: 20),
-
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Date
-                    Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: InkWell(
+                  onTap: _isLoading ? null : _handleSubmit,
+                  splashColor: AppColors.lainnya,
+                  borderRadius: BorderRadius.circular(15),
+                  child: Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.secondary,
+                          AppColors.tertiary,
                         ],
                       ),
-                      child: TextFormField(
-                        validator: (value) {
-                          // validator
-                          return null;
-                        },
-                        controller: dateController,
+                    ),
+                    child: Center(
+                      child: Text(
+                        "Save",
                         style: textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w500,
+                          color: AppColors.surface,
+                          fontWeight: FontWeight.bold,
                         ),
-                        readOnly: true,
-                        onTap: () {
-                          _selectDate();
-                        },
-
-                        decoration: InputDecoration(
-                          hintText: "Tanggal",
-                          prefixIcon: Container(
-                            margin: EdgeInsets.only(right: 6, left: 18),
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: selectedDate != null
-                                  ? AppColors.primary.withValues(alpha: 0.3)
-                                  : AppColors.divider,
-                            ),
-                            child: Icon(
-                              Icons.date_range,
-                              color: selectedDate != null
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                          prefixIconColor: AppColors.textSecondary,
-                          fillColor: AppColors.surface,
-                          filled: true,
-                          hintStyle: textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
-                          ),
-                          contentPadding: EdgeInsets.symmetric(vertical: 20),
-
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: InkWell(
-                onTap: () {},
-                splashColor: AppColors.lainnya,
-                borderRadius: BorderRadius.circular(15),
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        AppColors.secondary,
-                        AppColors.tertiary,
-                      ],
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Save",
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: AppColors.surface,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Container _buildDateField(TextTheme textTheme) {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      // bottomNavigationBar: _buildBottomButton(),
+      child: TextFormField(
+        validator: (value) {
+          // validator
+          return null;
+        },
+        controller: dateController,
+        style: textTheme.bodyLarge?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w500,
+        ),
+        readOnly: true,
+        onTap: () {
+          _selectDate();
+        },
+
+        decoration: InputDecoration(
+          hintText: "Tanggal",
+          prefixIcon: Container(
+            margin: EdgeInsets.only(right: 6, left: 18),
+            height: 40,
+            width: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: dateController.text.isNotEmpty
+                  ? AppColors.primary.withValues(alpha: 0.3)
+                  : AppColors.divider,
+            ),
+            child: Icon(
+              Icons.date_range,
+              color: dateController.text.isNotEmpty
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
+            ),
+          ),
+          prefixIconColor: AppColors.textSecondary,
+          fillColor: AppColors.surface,
+          filled: true,
+          hintStyle: textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 20),
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Container _buildTitleField(TextTheme textTheme) {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+
+      // title
+      child: TextFormField(
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'field tidak boleh kosong';
+          }
+          return null;
+        },
+        controller: titleController,
+        style: textTheme.bodyLarge?.copyWith(color: AppColors.textPrimary),
+
+        decoration: InputDecoration(
+          hintText: "Judul",
+
+          prefixIcon: Container(
+            margin: EdgeInsets.only(right: 6, left: 18),
+            height: 40,
+            width: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.divider,
+            ),
+            child: Icon(Icons.edit),
+          ),
+          prefixIconColor: AppColors.textSecondary,
+          fillColor: AppColors.surface,
+          filled: true,
+          hintStyle: textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 20),
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  TextFormField _buildAmountField(TextTheme textTheme) {
+    return TextFormField(
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return " jumlah tidak boleh kosong";
+        }
+
+        if (double.tryParse(value) == null) {
+          return 'jumlah harus berupa angka';
+        }
+
+        if (double.parse(value) <= 0) {
+          return 'jumlah harus lebih dari 0';
+        }
+
+        return null;
+      },
+      controller: amountController,
+      textAlign: TextAlign.center,
+      keyboardType: TextInputType.number,
+      style: textTheme.displayLarge?.copyWith(color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        hintText: "\$0",
+        hintStyle: textTheme.displayLarge?.copyWith(
+          color: AppColors.textSecondary.withValues(alpha: 0.5),
+        ),
+
+        contentPadding: EdgeInsets.symmetric(vertical: 15),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(25),
+          borderSide: BorderSide.none,
+        ),
+      ),
     );
   }
 

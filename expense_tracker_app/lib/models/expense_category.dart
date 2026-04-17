@@ -12,15 +12,15 @@ enum ExpenseCategory {
 
   static ExpenseCategory fromString(String category) {
     switch (category.toLowerCase()) {
-      case 'makanan':
+      case 'Makanan & Minuman':
         return ExpenseCategory.makanan;
-      case 'transport':
+      case 'Transportasi':
         return ExpenseCategory.transportasi;
-      case 'belanja':
+      case 'Belanja':
         return ExpenseCategory.belanja;
-      case 'hiburan':
+      case 'Hiburan':
         return ExpenseCategory.hiburan;
-      case 'kesehatan':
+      case 'Kesehatan':
         return ExpenseCategory.kesehatan;
       default:
         return ExpenseCategory.lainnya;

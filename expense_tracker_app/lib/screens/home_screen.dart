@@ -1,6 +1,8 @@
 import 'package:expense_tracker_app/cubit/expense_cubit.dart';
 import 'package:expense_tracker_app/cubit/expense_state.dart';
+import 'package:expense_tracker_app/models/expense.dart';
 import 'package:expense_tracker_app/models/expense_category.dart';
+import 'package:expense_tracker_app/routes/app_router.dart';
 import 'package:expense_tracker_app/utils/colors.dart';
 import 'package:expense_tracker_app/utils/empty_state.dart';
 import 'package:expense_tracker_app/utils/loading_state.dart';
@@ -10,9 +12,8 @@ import 'package:expense_tracker_app/utils/expense_icon.dart';
 import 'package:expense_tracker_app/widgets/expense_card.dart';
 import 'package:expense_tracker_app/widgets/summary_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
-// bug udah di fiks, tinggal jalankan run saja
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,49 +36,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {
-          List<dynamic> allExpenses = [];
-          List<dynamic> todayExpenses = [];
+          List<Expense> allExpenses = [];
+          List<Expense> todayExpenses = [];
           double totalExpenses = 0.0;
-          double todayTotal = 0.0;
 
-          if (state is Expenseloaded && state.expenses != null) {
-            allExpenses = state.expenses!;
-
-            print(' State: Expenseloaded');
-            print(' All expenses count: ${allExpenses.length}');
-            print(' All expenses: $allExpenses');
+          if (state is ExpenseLoaded) {
+            allExpenses = state.expenses;
+            totalExpenses = state.totalAmount;
 
             // Filter today's expenses
             final today = DateTime.now();
             todayExpenses = allExpenses.where((expense) {
-              final isSameDay =
-                  expense.date.year == today.year &&
+              return expense.date.year == today.year &&
                   expense.date.month == today.month &&
                   expense.date.day == today.day;
-
-              if (isSameDay) {
-                print(' Today expense found: ${expense.title}');
-              }
-
-              return isSameDay;
             }).toList();
-
-            print(' Today expenses count: ${todayExpenses.length}');
-            print(' Today expenses: $todayExpenses');
-
-            // Calculate totals
-            totalExpenses = allExpenses.fold<double>(
-              0.0,
-              (sum, expense) => sum + (expense.amount ?? 0.0),
-            );
-
-            todayTotal = todayExpenses.fold<double>(
-              0.0,
-              (sum, expense) => sum + (expense.amount ?? 0.0),
-            );
-
-            print('Total expenses: $totalExpenses');
-            print('Today total: $todayTotal');
           }
 
           return CustomScrollView(
@@ -92,7 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: AppColors.primary.withOpacity(0.4),
+                            backgroundColor: AppColors.primary.withValues(
+                              alpha: 0.4,
+                            ),
                             child: const Icon(
                               Icons.person,
                               color: AppColors.primary,
@@ -143,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // 4. Content based on state
-              if (state is Expenseloading)
+              if (state is ExpenseLoading)
                 const SliverFillRemaining(
                   hasScrollBody: false,
                   child: LoadingState(),
@@ -163,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   hasScrollBody: false,
                   child: _buildNoTodayExpenses(context),
                 )
-              else if (state is Expenseloaded)
+              else if (state is ExpenseLoaded)
                 _buildExpenseList(todayExpenses),
 
               // Bottom spacing for FAB
@@ -175,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildExpenseList(List<dynamic> todayExpenses) {
+  Widget _buildExpenseList(List<Expense> todayExpenses) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       sliver: SliverList(
@@ -184,15 +159,13 @@ class _HomeScreenState extends State<HomeScreen> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: ExpenseCard(
-              title: expense.title ?? 'Tanpa Judul',
-              time: expense.date != null
-                  ? DateFormat('HH:mm').format(expense.date)
-                  : '--:--',
-              amount: expense.amount ?? 0.0,
+              title: expense.title,
+              time: DateFormat('HH:mm').format(expense.date),
+              amount: expense.amount,
               icon: _getCategoryIcon(
-                ExpenseCategory.fromString(expense.category ?? 'Lainnya'),
+                ExpenseCategory.fromString(expense.category),
               ),
-              color: AppColors.getCategoryColor(expense.category ?? 'Lainnya'),
+              color: AppColors.getCategoryColor(expense.category),
             ),
           );
         }, childCount: todayExpenses.length),
@@ -217,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  // TODO: Navigate to all transactions
+                  context.go(AppRoutes.transaction);
                 },
                 child: Text(
                   "Lihat Semua",

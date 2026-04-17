@@ -3,7 +3,9 @@ import 'package:expense_tracker_app/cubit/expense_state.dart';
 import 'package:expense_tracker_app/models/expense.dart';
 import 'package:expense_tracker_app/models/expense_category.dart';
 import 'package:expense_tracker_app/utils/colors.dart';
+import 'package:expense_tracker_app/utils/empty_state.dart';
 import 'package:expense_tracker_app/utils/expense_icon.dart';
+import 'package:expense_tracker_app/utils/loading_state.dart';
 import 'package:expense_tracker_app/widgets/expense_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,10 +35,8 @@ class _ExpensePageState extends State<ExpensePage> {
       color: AppColors.background,
       child: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {
-          if (state is Expenseloading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            );
+          if (state is ExpenseLoading) {
+            return LoadingState();
           }
 
           if (state is ExpenseError) {
@@ -44,14 +44,14 @@ class _ExpensePageState extends State<ExpensePage> {
           }
 
           if (state is ExpenseEmpty) {
-            return _buildEmptyState(context);
+            return EmptyState();
           }
 
-          if (state is Expenseloaded && state.expenses != null) {
-            final expenses = state.expenses!;
+          if (state is ExpenseLoaded) {
+            final expenses = state.expenses;
 
             if (expenses.isEmpty) {
-              return _buildEmptyState(context);
+              return EmptyState();
             }
 
             // mengelompokkan data berdasarkan tannggal
@@ -89,21 +89,18 @@ class _ExpensePageState extends State<ExpensePage> {
             );
           }
 
-          // ✅ Default fallback
           return const SizedBox.shrink();
         },
       ),
     );
   }
 
-  // ========== HELPER: GROUP EXPENSES BY DATE ==========
   /// Mengelompokkan expenses berdasarkan tanggal
-
   Map<String, List<Expense>> _groupExpensesByDate(List<Expense> expenses) {
     final Map<String, List<Expense>> grouped = {};
 
     for (var expense in expenses) {
-      // Format tanggal: "31 Mar 2026"
+      // Format tanggal untuk key nya
       final dateKey = DateFormat('dd MMM yyyy', 'id_ID').format(expense.date);
 
       // Jika key belum ada, buat list baru
@@ -115,7 +112,7 @@ class _ExpensePageState extends State<ExpensePage> {
       grouped[dateKey]!.add(expense);
     }
 
-    // ✅ Sort by date (newest first)
+    // sort tanggal yang terbaru
     final sortedKeys = grouped.keys.toList()
       ..sort((a, b) {
         final dateA = DateFormat('dd MMM yyyy', 'id_ID').parse(a);
@@ -127,7 +124,6 @@ class _ExpensePageState extends State<ExpensePage> {
     return {for (var key in sortedKeys) key: grouped[key]!};
   }
 
-  // ========== WIDGET: HEADER ==========
   Widget _buildHeader(TextTheme textTheme, double total, int count) {
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
@@ -193,7 +189,6 @@ class _ExpensePageState extends State<ExpensePage> {
     );
   }
 
-  // ========== WIDGET: DATE SECTION ==========
   Widget _buildDateSection(
     String dateKey,
     List<Expense> expenses,
@@ -225,6 +220,8 @@ class _ExpensePageState extends State<ExpensePage> {
                       color: AppColors.textPrimary,
                     ),
                   ),
+
+                  // pengkondisian untuk jika date adalah  hari ini
                   if (_isToday(dateKey)) ...[
                     const SizedBox(width: 8),
                     Container(
@@ -336,41 +333,6 @@ class _ExpensePageState extends State<ExpensePage> {
     }
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 120,
-            color: AppColors.divider,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Belum ada pengeluaran',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              'Pengeluaran yang Anda buat\nakan muncul di sini',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ========== WIDGET: ERROR STATE ==========
   Widget _buildErrorState(BuildContext context, String message) {
     return Center(
       child: Column(

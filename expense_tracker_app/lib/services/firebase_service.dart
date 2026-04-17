@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracker_app/models/expense.dart';
 import 'package:expense_tracker_app/models/expense_category.dart';
@@ -8,8 +10,6 @@ class FirebaseService {
 
   static CollectionReference<Map<String, dynamic>> get _collectionReference =>
       _firestore.collection(_collectionName);
-
-  // logic seng di butohno:
 
   // fetchdata
   static Future<List<Expense>> fetchData() async {
@@ -27,14 +27,14 @@ class FirebaseService {
           final data = doc.data();
           data['id'] = doc.id;
 
-          print('🔄 Parsing document ${doc.id}...');
-          print('🔄 Data to parse: $data');
+          log('Parsing document ${doc.id}...');
+          log('Data to parse: $data');
 
           final expense = Expense.fromJson(data);
           return expense;
         } catch (e) {
-          print('❌ Error parsing document ${doc.id}: $e');
-          print('❌ Stack trace: ${StackTrace.current}');
+          log('Error parsing document ${doc.id}: $e');
+          log('Stack trace: ${StackTrace.current}');
           rethrow;
         }
       }).toList();
@@ -264,4 +264,50 @@ class FirebaseService {
       throw Exception('Gagal menghapus semua data: $e');
     }
   }
+
+  // static Future<List<Expense>> getExpenseByDateRange({
+  //   required DateTime startDate,
+  //   required DateTime endDate,
+  // }) async {
+  //   try {
+  //     final startTimestamp = Timestamp.fromDate(
+  //       DateTime(startDate.year, startDate.month, startDate.day, 0, 0, 0),
+  //     );
+
+  //     final endTimestamp = Timestamp.fromDate(
+  //       DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59),
+  //     );
+
+  //     final querySnapshot = await _collectionReference
+  //         .where('date', isGreaterThanOrEqualTo: startTimestamp)
+  //         .where('date', isLessThanOrEqualTo: endTimestamp)
+  //         .orderBy('date', descending: true)
+  //         .get();
+
+  //     log('expenses:  $querySnapshot');
+  //     log('total expense: ${querySnapshot.docs.length}');
+  //     if (querySnapshot.docs.isEmpty) {
+  //       return [];
+  //     }
+  //     final expenses = querySnapshot.docs.map((doc) {
+  //       try {
+  //         final data = doc.data();
+  //         data['id'] = doc.id;
+
+  //         log('Parsing expense: ${doc.id}');
+  //         return Expense.fromJson(data);
+  //       } catch (e) {
+  //         log('Error parsing expense ${doc.id}: $e');
+  //         rethrow;
+  //       }
+  //     }).toList();
+
+  //     log('expense yang telah di ubah ke object dart: $expenses');
+  //     return expenses;
+  //   } catch (e) {
+  //     throw Exception(
+  //       'gagal mengambil data berdasarkan rentan tanggal, error: ${e.toString()}',
+  //     );
+  //   }
+  // }
 }

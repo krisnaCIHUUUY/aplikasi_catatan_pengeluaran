@@ -5,7 +5,7 @@ import 'package:expense_tracker_app/screens/statistic_screen.dart';
 
 import 'package:go_router/go_router.dart';
 
-part 'app_routes.dart';
+part '../models/app_routes.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.home,

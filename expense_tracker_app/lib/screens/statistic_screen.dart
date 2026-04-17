@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:expense_tracker_app/utils/colors.dart';
 import 'package:expense_tracker_app/widgets/expense_page.dart';
 import 'package:expense_tracker_app/widgets/income_page.dart';
@@ -80,7 +82,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
               ],
               radiusStyle: true,
               onToggle: (index) {
-                print('switched to: $index');
+                log('switched to: $index');
                 if (index != null) {
                   setState(() {
                     selectedIndex = index;

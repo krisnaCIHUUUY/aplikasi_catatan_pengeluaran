@@ -1,4 +1,6 @@
 // lib/models/expense.dart
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Expense {
@@ -25,31 +27,31 @@ class Expense {
   // ✅ FROM FIRESTORE dengan DEBUGGING
   factory Expense.fromJson(Map<String, dynamic> json) {
     try {
-      print('🔄 Parsing JSON: $json');
+      log('Parsing JSON: $json');
 
       final id = json['id'] as String? ?? '';
-      print('ID: $id');
+      log('ID: $id');
 
       final title = json['title'] as String? ?? '';
-      print('Title: $title');
+      log('Title: $title');
 
       final amount = _parseAmount(json['amount']);
-      print('Amount: $amount');
+      log('Amount: $amount');
 
       final category = json['category'] as String? ?? '';
-      print('Category: $category');
+      log('Category: $category');
 
       final date = _parseDate(json['date']);
-      print('Date: $date');
+      log('Date: $date');
 
       final description = json['description'] as String?;
-      print('Description: $description');
+      log('Description: $description');
 
       final createdAt = _parseDate(json['createdAt']) ?? DateTime.now();
-      print('CreatedAt: $createdAt');
+      log('CreatedAt: $createdAt');
 
       final updatedAt = _parseDate(json['updatedAt']) ?? DateTime.now();
-      print(' UpdatedAt: $updatedAt');
+      log(' UpdatedAt: $updatedAt');
 
       return Expense(
         id: id,
@@ -62,9 +64,9 @@ class Expense {
         updatedAt: updatedAt,
       );
     } catch (e, stackTrace) {
-      print('Error in fromJson: $e');
-      print('JSON data: $json');
-      print('Stack trace: $stackTrace');
+      log('Error in fromJson: $e');
+      log('JSON data: $json');
+      log('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -90,7 +92,7 @@ class Expense {
       try {
         return DateTime.parse(value);
       } catch (e) {
-        print('⚠️ Failed to parse date string: $value');
+        log('Failed to parse date string: $value');
         return null;
       }
     }

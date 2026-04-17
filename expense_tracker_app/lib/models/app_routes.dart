@@ -1,4 +1,4 @@
-part of 'app_router.dart';
+part of '../routes/app_router.dart';
 
 abstract class AppRoutes {
   // Paths
