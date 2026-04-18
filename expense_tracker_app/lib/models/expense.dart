@@ -24,7 +24,7 @@ class Expense {
     required this.updatedAt,
   });
 
-  // ✅ FROM FIRESTORE dengan DEBUGGING
+  // FROM FIRESTORE dengan DEBUGGING
   factory Expense.fromJson(Map<String, dynamic> json) {
     try {
       log('Parsing JSON: $json');

@@ -1,6 +1,7 @@
 import 'package:expense_tracker_app/screens/add_expense_page.dart';
 import 'package:expense_tracker_app/screens/home_page.dart';
 import 'package:expense_tracker_app/screens/home_screen.dart';
+import 'package:expense_tracker_app/screens/setting_page.dart';
 import 'package:expense_tracker_app/screens/statistic_screen.dart';
 
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,6 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
-
       ],
     ),
 
@@ -43,6 +43,12 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.add,
       name: AppRoutes.addName,
       builder: (context, state) => AddExpensePage(),
+    ),
+
+    GoRoute(
+      path: AppRoutes.setting,
+      name: AppRoutes.settingName,
+      builder: (context, state) => const SettingPage(),
     ),
   ],
 );

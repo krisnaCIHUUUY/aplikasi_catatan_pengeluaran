@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () => context.go(AppRoutes.setting),
                         icon: const Icon(Icons.settings),
                         color: AppColors.textPrimary,
                       ),

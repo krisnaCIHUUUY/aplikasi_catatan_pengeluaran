@@ -20,7 +20,6 @@ class IncomePage extends StatefulWidget {
 class _IncomePageState extends State<IncomePage> {
   late DateTime selectedMonth;
 
-  // Cache data per bulan agar navigasi tidak menghapus tampilan
   final Map<String, List<Expense>> _monthCache = {};
 
   String get _cacheKey =>
@@ -34,7 +33,6 @@ class _IncomePageState extends State<IncomePage> {
   }
 
   void _loadMonthData() {
-    // Jika data bulan ini sudah ada di cache, tidak perlu fetch ulang
     if (_monthCache.containsKey(_cacheKey)) return;
 
     context.read<ExpenseCubit>().getExpenseByMonth(
@@ -63,15 +61,12 @@ class _IncomePageState extends State<IncomePage> {
       padding: const EdgeInsets.only(top: 15),
       child: BlocListener<ExpenseCubit, ExpenseState>(
         listener: (context, state) {
-          // Simpan hasil ke cache saat data berhasil di-load
           if (state is ExpenseLoaded) {
             setState(() {
               _monthCache[_cacheKey] = state.expenses;
             });
           }
-          // Bulan kosong tetap dicatat di cache sebagai list kosong
-          // agar tidak fetch ulang, tapi tampilan tetap menggunakan
-          // data cache yang sudah ada
+
           if (state is ExpenseEmpty) {
             _monthCache[_cacheKey] = [];
           }
@@ -255,7 +250,6 @@ class _IncomePageState extends State<IncomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  // Disable saat sedang loading bulan baru
                   onPressed: isLoading ? null : () => _changeMonth(-1),
                   icon: const Icon(Icons.chevron_left),
                   color: AppColors.primary,
@@ -279,7 +273,6 @@ class _IncomePageState extends State<IncomePage> {
           ),
           Text(dateRange, style: textTheme.titleMedium),
           const SizedBox(height: 15),
-          // Tampilkan loading indicator kecil di dalam chart area saat fetch
           if (isLoading)
             const SizedBox(
               height: 380,
@@ -341,7 +334,6 @@ class _IncomePageState extends State<IncomePage> {
     );
   }
 
-  // Empty state khusus untuk bulan tanpa data — tidak menggantikan seluruh layar
   Widget _buildEmptyMonthState(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40),

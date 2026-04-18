@@ -134,7 +134,6 @@ expense_tracker_app/
 | go_router | ^17.1.0 | Navigasi deklaratif |
 | fl_chart | ^1.1.1 | Visualisasi grafik dan chart |
 | intl | ^0.20.2 | Internasionalisasi dan format tanggal (id_ID) |
-| http | ^1.6.0 | Klien HTTP untuk REST API |
 | flutter_form_builder | ^10.2.0 | Pengelolaan formulir |
 | toggle_switch | ^2.3.0 | Komponen toggle UI |
 | provider | ^6.1.5+1 | Dependency injection |
