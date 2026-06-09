@@ -97,7 +97,13 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       emit(ExpenseLoading());
 
       final startDate = DateTime(year, month, 1);
-      final endDate = DateTime(year, month + 1, 1);
+      // Akhir bulan: instant terakhir sebelum tanggal 1 bulan berikutnya,
+      // karena query memakai batas inklusif (isLessThanOrEqualTo).
+      final endDate = DateTime(
+        year,
+        month + 1,
+        1,
+      ).subtract(const Duration(microseconds: 1));
       final expenses = await FirebaseService.getExpensesByDateRange(
         startDate: startDate,
         endDate: endDate,

@@ -1,18 +1,26 @@
+import 'package:expense_tracker_app/cubit/expense_cubit.dart';
 import 'package:expense_tracker_app/routes/app_router.dart';
 import 'package:expense_tracker_app/utils/colors.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
   const HomePage({super.key, required this.navigationShell});
 
-  void _onTabTap(int index) {
+  void _onTabTap(BuildContext context, int index) {
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
     );
+    // HomeScreen di-keep-alive oleh indexedStack sehingga initState tidak
+    // terpanggil ulang; muat ulang data agar tidak menampilkan state stale
+    // dari tab Statistics yang berbagi ExpenseCubit yang sama.
+    if (index == 0) {
+      context.read<ExpenseCubit>().loadExpenses();
+    }
   }
 
   @override
@@ -47,7 +55,7 @@ class HomePage extends StatelessWidget {
             navigationShell.currentIndex, 
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        onTap: _onTabTap, 
+        onTap: (index) => _onTabTap(context, index),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined, size: 30),

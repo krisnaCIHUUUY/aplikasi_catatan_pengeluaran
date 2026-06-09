@@ -11,20 +11,10 @@ enum ExpenseCategory {
   const ExpenseCategory(this.displayName);
 
   static ExpenseCategory fromString(String category) {
-    switch (category.toLowerCase()) {
-      case 'Makanan & Minuman':
-        return ExpenseCategory.makanan;
-      case 'Transportasi':
-        return ExpenseCategory.transportasi;
-      case 'Belanja':
-        return ExpenseCategory.belanja;
-      case 'Hiburan':
-        return ExpenseCategory.hiburan;
-      case 'Kesehatan':
-        return ExpenseCategory.kesehatan;
-      default:
-        return ExpenseCategory.lainnya;
-    }
+    return ExpenseCategory.values.firstWhere(
+      (e) => e.displayName == category,
+      orElse: () => ExpenseCategory.lainnya,
+    );
   }
 
   static List<String> getAllCategory() {

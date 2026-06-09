@@ -98,7 +98,6 @@ class FirebaseService {
         'category': expense.category,
         'date': Timestamp.fromDate(expense.date),
         'description': expense.description,
-        'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
 

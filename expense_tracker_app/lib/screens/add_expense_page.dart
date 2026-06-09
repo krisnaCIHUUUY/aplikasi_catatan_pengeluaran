@@ -185,6 +185,15 @@ class _AddExpensePageState extends State<AddExpensePage> {
     if (!_key.currentState!.validate()) {
       return;
     }
+    if (_selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pilih kategori terlebih dahulu'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
     final date = DateTime(
       selectedDate.year,
       selectedDate.month,
@@ -202,8 +211,9 @@ class _AddExpensePageState extends State<AddExpensePage> {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
+    // Navigasi ditangani oleh BlocListener setelah state ExpenseLoaded,
+    // agar SnackBar sukses sempat ditampilkan.
     context.read<ExpenseCubit>().addExpense(expense);
-    context.go(AppRoutes.home);
   }
 
   @override
@@ -240,7 +250,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 backgroundColor: AppColors.primary,
               ),
             );
-            context.pop();
+            context.go(AppRoutes.home);
           } else if (state is ExpenseError) {
             setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
