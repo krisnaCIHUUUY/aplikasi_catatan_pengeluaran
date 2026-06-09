@@ -494,7 +494,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
       keyboardType: TextInputType.number,
       style: textTheme.displayLarge?.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
-        hintText: "\$0",
+        hintText: "Rp 0",
         hintStyle: textTheme.displayLarge?.copyWith(
           color: AppColors.textSecondary.withValues(alpha: 0.5),
         ),

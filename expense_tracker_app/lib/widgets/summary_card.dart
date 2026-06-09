@@ -3,32 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class SummaryCard extends StatelessWidget {
-  final double saldo;
-  final double pengeluaran;
-  final double pemasukan;
+  final double monthlyTotal; // pengeluaran bulan kalender berjalan
+  final double yearlyTotal; // pengeluaran 12 bulan terakhir (rolling)
   const SummaryCard({
     super.key,
-    required this.saldo,
-    required this.pengeluaran,
-    required this.pemasukan,
+    required this.monthlyTotal,
+    required this.yearlyTotal,
   });
+
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    // final percentage = saldo > 0 ? (pengeluaran / saldo) * 100 : 0.0;
-
-    final remainingSaldo = saldo - pengeluaran;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22.0),
       child: Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         width: double.infinity,
         decoration: BoxDecoration(
-          // color: AppColors.primary,
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [
               AppColors.primary,
               AppColors.secondary,
@@ -42,115 +41,57 @@ class SummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Total Saldo",
-                  style: textTheme.titleSmall?.copyWith(color: Colors.white),
-                ),
-                SizedBox(width: 10),
-                // Icon(Icons.money_rounded, color: Colors.white),
-              ],
-            ),
-
-            SizedBox(height: 20),
             Text(
-              NumberFormat.currency(
-                locale: 'id_ID',
-                symbol: 'Rp ',
-                decimalDigits: 0,
-              ).format(remainingSaldo),
+              "Pengeluaran Bulan Ini",
+              style: textTheme.titleSmall?.copyWith(color: Colors.white),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _currencyFormat.format(monthlyTotal),
               style: textTheme.displayLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 25),
-            Row(
-              spacing: 10,
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: AppColors.background.withValues(alpha: 0.2),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(Icons.arrow_outward, color: Colors.white),
-                            Text(
-                              "Pengeluaran",
-                              style: textTheme.labelMedium?.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+            const SizedBox(height: 25),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: AppColors.background.withValues(alpha: 0.2),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Rekap 12 Bulan Terakhir",
+                        style: textTheme.labelMedium?.copyWith(
+                          color: Colors.white,
                         ),
-                        SizedBox(height: 5),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Text(
-                            NumberFormat.currency(
-                              locale: 'id_ID',
-                              symbol: 'Rp ',
-                              decimalDigits: 0,
-                            ).format(pengeluaran),
-                            style: textTheme.titleLarge?.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  Text(
+                    _currencyFormat.format(yearlyTotal),
+                    style: textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: AppColors.background.withValues(alpha: 0.2),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(Icons.arrow_downward, color: Colors.white),
-                            Text(
-                              "Pemasukan",
-                              style: textTheme.labelMedium?.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 5),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Text(
-                            NumberFormat.currency(
-                              locale: 'id_ID',
-                              symbol: 'Rp ',
-                              decimalDigits: 0,
-                            ).format(pemasukan),
-                            style: textTheme.titleLarge?.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

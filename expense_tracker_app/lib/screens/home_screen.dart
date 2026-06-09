@@ -38,19 +38,36 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, state) {
           List<Expense> allExpenses = [];
           List<Expense> todayExpenses = [];
-          double totalExpenses = 0.0;
+          double monthlyTotal = 0.0;
+          double yearlyTotal = 0.0;
 
           if (state is ExpenseLoaded) {
             allExpenses = state.expenses;
-            totalExpenses = state.totalAmount;
+
+            final today = DateTime.now();
 
             // Filter today's expenses
-            final today = DateTime.now();
             todayExpenses = allExpenses.where((expense) {
               return expense.date.year == today.year &&
                   expense.date.month == today.month &&
                   expense.date.day == today.day;
             }).toList();
+
+            // Total pengeluaran bulan kalender berjalan
+            monthlyTotal = allExpenses
+                .where(
+                  (e) =>
+                      e.date.year == today.year &&
+                      e.date.month == today.month,
+                )
+                .fold<double>(0.0, (sum, e) => sum + e.amount);
+
+            // Rekap 12 bulan terakhir (rolling): sejak tanggal yang sama
+            // satu tahun lalu hingga sekarang.
+            final cutoff = DateTime(today.year - 1, today.month, today.day);
+            yearlyTotal = allExpenses
+                .where((e) => e.date.isAfter(cutoff))
+                .fold<double>(0.0, (sum, e) => sum + e.amount);
           }
 
           return CustomScrollView(
@@ -106,9 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
               // 2. Summary Card
               SliverToBoxAdapter(
                 child: SummaryCard(
-                  saldo: 2500000.0,
-                  pengeluaran: totalExpenses,
-                  pemasukan: 0.0,
+                  monthlyTotal: monthlyTotal,
+                  yearlyTotal: yearlyTotal,
                 ),
               ),
 
