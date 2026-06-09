@@ -27,6 +27,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
   TimeOfDay selectedTime = TimeOfDay.now();
 
   bool _isLoading = false;
+  // True hanya selama proses submit dari halaman ini, agar BlocListener
+  // tidak bereaksi terhadap perubahan state ExpenseCubit global yang
+  // dipicu layar lain (mis. loadExpenses() saat kembali ke Home).
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -213,6 +217,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
     );
     // Navigasi ditangani oleh BlocListener setelah state ExpenseLoaded,
     // agar SnackBar sukses sempat ditampilkan.
+    _isSubmitting = true;
     context.read<ExpenseCubit>().addExpense(expense);
   }
 
@@ -240,9 +245,13 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
       body: BlocListener<ExpenseCubit, ExpenseState>(
         listener: (context, state) {
+          // Abaikan perubahan state yang tidak berasal dari submit halaman ini.
+          if (!_isSubmitting) return;
+
           if (state is ExpenseLoading) {
             setState(() => _isLoading = true);
           } else if (state is ExpenseLoaded) {
+            _isSubmitting = false;
             setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -252,6 +261,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             );
             context.go(AppRoutes.home);
           } else if (state is ExpenseError) {
+            _isSubmitting = false;
             setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

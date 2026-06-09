@@ -8,16 +8,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-class IncomePage extends StatefulWidget {
+class IncomePage extends StatelessWidget {
   const IncomePage({super.key, this.textTheme});
 
   final TextTheme? textTheme;
 
   @override
-  State<IncomePage> createState() => _IncomePageState();
+  Widget build(BuildContext context) {
+    // Cubit terisolasi: view bulanan ini punya ExpenseCubit sendiri agar
+    // load per-bulan tidak mengubah / tidak terpengaruh ExpenseCubit global
+    // yang dipakai Home & Expense (data semua bulan).
+    return BlocProvider<ExpenseCubit>(
+      create: (_) => ExpenseCubit(),
+      child: const _IncomeView(),
+    );
+  }
 }
 
-class _IncomePageState extends State<IncomePage> {
+class _IncomeView extends StatefulWidget {
+  const _IncomeView();
+
+  @override
+  State<_IncomeView> createState() => _IncomeViewState();
+}
+
+class _IncomeViewState extends State<_IncomeView> {
   late DateTime selectedMonth;
 
   final Map<String, List<Expense>> _monthCache = {};
